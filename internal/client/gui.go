@@ -71,8 +71,9 @@ func writeMessages(g *gocui.Gui, v *gocui.View) error {
 
 	}
 
-	_, err = messageView.Write([]byte(formattedMessage))
-
+	if !strings.HasPrefix(message, "/") {
+		_, err = messageView.Write([]byte(formattedMessage))
+	}
 	messages <- message
 
 	if err != nil {

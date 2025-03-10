@@ -50,24 +50,25 @@ func (s *Server) Run() {
 
 func (s *Server) handleConnection(conn net.Conn) {
 	log.Printf("New connection from %s", conn.RemoteAddr())
+	if s.password != "" {
+		buf := make([]byte, 1024)
+		n, err := conn.Read(buf)
 
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
+		if err != nil {
+			log.Printf("Failed to read password: %v", err)
+			conn.Close()
+			return
+		}
 
-	if err != nil {
-		log.Printf("Failed to read password: %v", err)
-		conn.Close()
-		return
-	}
+		receivedPassword := strings.TrimSpace(string(buf[:n]))
 
-	receivedPassword := strings.TrimSpace(string(buf[:n]))
-
-	if receivedPassword != s.password {
-		log.Printf("Invalid password from %s. Received: '%s', Expected: '%s'",
-			conn.RemoteAddr(), receivedPassword, s.password)
-		conn.Write([]byte(""))
-		conn.Close()
-		return
+		if receivedPassword != s.password {
+			log.Printf("Invalid password from %s. Received: '%s', Expected: '%s'",
+				conn.RemoteAddr(), receivedPassword, s.password)
+			conn.Write([]byte("Invalid password"))
+			conn.Close()
+			return
+		}
 	}
 	conn.Write([]byte("OK"))
 	chatter := &chatter{

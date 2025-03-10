@@ -43,6 +43,9 @@ func (c *chatter) handleCommunication(server *Server) {
 			if isCommand {
 				cmd.Handler(server, c, parts[1:])
 				continue
+			} else {
+				c.conn.Write([]byte("Invalid command, see usage below./n"))
+				handleHelp(server, c, parts)
 			}
 		}
 
